@@ -1,4 +1,4 @@
-import { Platform } from 'expo-modules-core';
+import { Platform, Subscription } from 'expo-modules-core';
 import invariant from 'invariant';
 
 import { NativeURLListener, URLListener } from './Linking.types';
@@ -8,7 +8,7 @@ const EventTypes = ['url'];
 const listeners: { listener: URLListener; nativeListener: NativeURLListener }[] = [];
 
 export default {
-  addEventListener(type: 'url', listener: URLListener): void {
+  addEventListener(type: 'url', listener: URLListener): Subscription {
     invariant(
       EventTypes.indexOf(type) !== -1,
       `Linking.addEventListener(): ${type} is not a valid event`
@@ -16,9 +16,19 @@ export default {
     const nativeListener: NativeURLListener = (nativeEvent) =>
       listener({ url: window.location.href, nativeEvent });
     listeners.push({ listener, nativeListener });
+
     window.addEventListener('message', nativeListener, false);
+
+    const subscription = {
+      remove: () => removeEventListener('message', nativeListener, false),
+    };
+
+    return subscription;
   },
 
+  /**
+   * @deprecated `removeEventListener(...)` has been deprecated. Please use `remove()` on the subscription returned by `addEventListener(...)` instead.
+   */
   removeEventListener(type: 'url', listener: URLListener): void {
     invariant(
       EventTypes.indexOf(type) !== -1,

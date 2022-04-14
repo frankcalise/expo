@@ -8,7 +8,14 @@ export default {
         const nativeListener = (nativeEvent) => listener({ url: window.location.href, nativeEvent });
         listeners.push({ listener, nativeListener });
         window.addEventListener('message', nativeListener, false);
+        const subscription = {
+            remove: () => removeEventListener('message', nativeListener, false),
+        };
+        return subscription;
     },
+    /**
+     * @deprecated `removeEventListener(...)` has been deprecated. Please use `remove()` on the subscription returned by `addEventListener(...)` instead.
+     */
     removeEventListener(type, listener) {
         invariant(EventTypes.indexOf(type) !== -1, `Linking.removeEventListener(): ${type} is not a valid event.`);
         const listenerIndex = listeners.findIndex((pair) => pair.listener === listener);
